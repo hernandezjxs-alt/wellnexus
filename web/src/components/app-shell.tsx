@@ -2,11 +2,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Menu, SunMoon, Users } from "lucide-react";
+import { Download, Inbox, LogOut, Menu, MessageSquare, Share2, SunMoon, Tags, Users } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { usePwa } from "./pwa";
 import { MODULOS } from "@/lib/modulos";
 import { useAuth } from "./auth-provider";
 import { Logo } from "./logo";
 
+const ib = "size-10 grid place-items-center rounded-lg border border-line hover:bg-surface2";
 const guardar = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
 const leer = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
 
@@ -15,6 +18,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const ruta = usePathname();
   const [abierto, setAbierto] = useState(false);
   const [marca, setMarca] = useState<"v4" | "v5">("v4");
+  const { instalable, instalada } = usePwa();
+  const [sinLeer, setSinLeer] = useState(0);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const toast = (t: string) => { setAviso(t); setTimeout(() => setAviso(null), 4000); };
+
+  useEffect(() => {
+    if (!esAdmin) return;
+    const leer = () => supabase.from("aviso").select("id", { count: "exact", head: true }).eq("leido", false).then(({ count }) => setSinLeer(count ?? 0));
+    leer();
+    const t = setInterval(leer, 120000);
+    window.addEventListener("wx-avisos", leer);
+    return () => { clearInterval(t); window.removeEventListener("wx-avisos", leer); };
+  }, [esAdmin, ruta]);
+
+  async function instalar() {
+    if (instalable) { await instalable.prompt(); return; }
+    toast("En el menú del navegador elige Instalar app, o Compartir y Añadir a pantalla de inicio.");
+  }
+  async function compartir() {
+    const url = window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH ?? "") + "/";
+    try { if (navigator.share) { await navigator.share({ title: "Wellnexus", url }); return; } } catch { return; }
+    try { await navigator.clipboard.writeText(url); toast("Link copiado."); } catch { toast(url); }
+  }
 
   useEffect(() => {
     const t = leer("wx-theme"); if (t) document.documentElement.setAttribute("data-theme", t);
@@ -31,8 +57,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const cambiarMarca = (m: "v4" | "v5") => { setMarca(m); document.documentElement.setAttribute("data-brand", m); guardar("wx-brand", m); };
 
   const actual = MODULOS.find((m) => ruta.startsWith(`/${m.id}/`));
-  const titulo = ruta.startsWith("/admin") ? "Usuarios" : actual?.nombre ?? "Inicio";
-  const sub = ruta.startsWith("/admin") ? "Administración" : actual?.corto ?? "Una sola plataforma para el pozo, la producción y el equipo";
+  const titulo = ruta.startsWith("/admin") ? "Usuarios" : ruta.startsWith("/etiquetas") ? "Etiquetas" : ruta.startsWith("/avisos") ? "Avisos y mensajes" : ruta.startsWith("/contacto") ? "Contacto" : actual?.nombre ?? "Inicio";
+  const sub = ruta.startsWith("/admin") || ruta.startsWith("/etiquetas") || ruta.startsWith("/avisos") ? "Administración" : ruta.startsWith("/contacto") ? "Escríbenos" : actual?.corto ?? "Una sola plataforma para el pozo, la producción y el equipo";
   const nombre = perfil?.nombre?.split(" ")[0] ?? session?.user.email?.split("@")[0] ?? "";
   const pad = { paddingLeft: "max(16px, env(safe-area-inset-left, 0px))", paddingRight: "max(16px, env(safe-area-inset-right, 0px))" };
 
@@ -59,7 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       {abierto && <div className="fixed inset-0 z-[65] bg-black/50 md:hidden" onClick={() => setAbierto(false)} />}
       <div className="min-w-0">
-        <header className="sticky z-40 bg-surface border-b border-line flex items-center gap-2 py-2.5" style={{ top: "env(safe-area-inset-top, 0px)", ...pad }}>
+        <header className="sticky z-40 bg-surface border-b border-line flex flex-wrap items-center gap-2 py-2.5" style={{ top: "env(safe-area-inset-top, 0px)", ...pad }}>
           <button onClick={() => setAbierto(true)} aria-label="Abrir módulos" className="md:hidden size-10 grid place-items-center rounded-lg border border-line"><Menu size={18} /></button>
           <div className="flex-1 min-w-0">
             <b className="font-display font-semibold block truncate">{titulo}</b>
@@ -69,10 +95,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="hidden sm:inline-flex border border-line rounded-lg overflow-hidden" role="group" aria-label="Versión de marca">
             {(["v4", "v5"] as const).map((m) => <button key={m} aria-pressed={marca === m} onClick={() => cambiarMarca(m)} className={`min-h-10 px-3 font-medium ${marca === m ? "bg-accent text-white" : "bg-surface text-muted"}`}>{m}</button>)}
           </div>
-          {esAdmin && <Link href="/admin/" aria-label="Usuarios" title="Usuarios" className="size-10 grid place-items-center rounded-lg border border-line hover:bg-surface2"><Users size={18} /></Link>}
-          <button onClick={cambiarTema} aria-label="Cambiar tema claro u oscuro" title="Tema" className="size-10 grid place-items-center rounded-lg border border-line hover:bg-surface2"><SunMoon size={18} /></button>
-          <button onClick={salir} aria-label="Salir" title="Salir" className="size-10 grid place-items-center rounded-lg border border-line hover:bg-surface2"><LogOut size={18} /></button>
+          {!instalada && <button onClick={instalar} aria-label="Instalar app" title="Instalar app" className={ib}><Download size={18} /></button>}
+          <button onClick={compartir} aria-label="Compartir app" title="Compartir app" className={ib}><Share2 size={18} /></button>
+          <Link href="/contacto/" aria-label="Contacto" title="Contacto" className={ib}><MessageSquare size={18} /></Link>
+          {esAdmin && <Link href="/etiquetas/" aria-label="Etiquetas oficiales" title="Etiquetas oficiales" className={ib}><Tags size={18} /></Link>}
+          {esAdmin && <Link href="/avisos/" aria-label={`Avisos y mensajes${sinLeer ? `, ${sinLeer} sin leer` : ""}`} title="Avisos y mensajes" className={`${ib} relative`}><Inbox size={18} />{sinLeer > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-crit text-white text-[11px] font-semibold grid place-items-center">{sinLeer}</span>}</Link>}
+          {esAdmin && <Link href="/admin/" aria-label="Usuarios" title="Usuarios" className={ib}><Users size={18} /></Link>}
+          <button onClick={cambiarTema} aria-label="Cambiar tema claro u oscuro" title="Tema" className={ib}><SunMoon size={18} /></button>
+          <button onClick={salir} aria-label="Salir" title="Salir" className={ib}><LogOut size={18} /></button>
         </header>
+        {aviso && <div role="status" className="fixed left-1/2 -translate-x-1/2 z-[80] bg-fg text-bg px-4 py-2.5 rounded-lg max-w-[calc(100%-32px)] text-sm" style={{ bottom: "calc(20px + env(safe-area-inset-bottom, 0px))" }}>{aviso}</div>}
         <div className="py-5 pb-12 flex flex-col gap-4 max-w-[1280px]" style={pad}>{children}</div>
       </div>
     </div>
