@@ -46,6 +46,8 @@ Detalle en [`docs/`](docs/): [tecnología de la plataforma](docs/tecnologia-plat
 
 ```
 README.md
+web/        La aplicación (Next.js, React, TypeScript, Tailwind, Supabase)
+prototipo/  Maqueta HTML de los 12 módulos, solo para ver el diseño
 docs/    Decisiones técnicas
 draw/    Diagrama de completación actual (v5), base de Wellnexus Draw
 logos/   Logotipo v4 y v5 (SVG y PNG) y láminas de módulos

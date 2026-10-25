@@ -1,0 +1,469 @@
+<title>Wellnexus</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Concepto: consola de ingeniería. Barra lateral con los 12 módulos, área de trabajo con datos de pozo, gráficas y diagramas a escala. */
+:root{
+  --bg:#EDF1F5; --surface:#FFFFFF; --surface2:#F5F8FB; --line:#D4DDE7;
+  --fg:#17212F; --muted:#586A7E; --accent:#3E6A94; --accent-text:#2E5A84; --accent-ink:#FFFFFF;
+  --sky:#7DD3FC; --sky-soft:#DDF2FD; --node:#BFE6FB;
+  --c1:#3E6A94; --c2:#CC7A22; --c3:#23895B;
+  --good:#23895B; --warn:#B7791F; --crit:#C93B47;
+  --earth:#D9E1E9; --steel:#46586D; --bore:#FFFFFF; --bore2:#EAF4FB; --tubstroke:#17212F; --pk:#3E6A94; --cable:#CC7A22; --pump:#7DD3FC; --perf:#C93B47;
+  --display:'Sora',system-ui,sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --shadow:0 1px 2px rgba(23,33,47,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1520; --surface:#142030; --surface2:#1A2A3D; --line:#27384D;
+  --fg:#E6ECF2; --muted:#93A5B8; --accent:#3E6A94; --accent-text:#7DD3FC; --sky-soft:#17344A;
+  --c1:#7DD3FC; --c2:#F0A04B; --c3:#4CC38A; --good:#4CC38A; --warn:#E3B04F; --crit:#F07C86;
+  --earth:#0A1119; --steel:#8FA4BB; --bore:#0F1A28; --bore2:#12263A; --tubstroke:#E6ECF2; --pk:#5B94C4; --cable:#F0A04B; --perf:#F07C86; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1520; --surface:#142030; --surface2:#1A2A3D; --line:#27384D;
+  --fg:#E6ECF2; --muted:#93A5B8; --accent:#3E6A94; --accent-text:#7DD3FC; --sky-soft:#17344A;
+  --c1:#7DD3FC; --c2:#F0A04B; --c3:#4CC38A; --good:#4CC38A; --warn:#E3B04F; --crit:#F07C86;
+  --earth:#0A1119; --steel:#8FA4BB; --bore:#0F1A28; --bore2:#12263A; --tubstroke:#E6ECF2; --pk:#5B94C4; --cable:#F0A04B; --perf:#F07C86; --shadow:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 var(--body);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{font-family:var(--display);margin:0;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:1.5rem;line-height:1.2} h2{font-size:1.05rem} h3{font-size:.92rem}
+p{margin:0}
+a{color:var(--accent-text)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:12px}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 4px 14px;text-decoration:none;color:var(--fg)}
+.brand svg{width:40px;height:40px;flex:none}
+.brand b{font:700 1.2rem/1 var(--display);letter-spacing:-.02em}
+.brand small{display:block;color:var(--muted);font-size:.72rem;margin-top:3px}
+.vbar{display:none;height:3px;margin:-8px 4px 12px;border-radius:2px;background:linear-gradient(90deg,#FFCC00 33%,var(--fg) 33% 66%,#E5394B 66%)}
+.v5 .vbar{display:block}
+nav.mods{display:flex;flex-direction:column;gap:2px;flex:1}
+nav.mods a{display:block;text-decoration:none;color:var(--fg);padding:7px 10px;border-radius:6px;border-left:3px solid transparent}
+nav.mods a:hover{background:var(--surface2)}
+nav.mods a[aria-current="page"]{background:var(--sky-soft);border-left-color:var(--accent);}
+nav.mods a b{font:600 .88rem var(--display);display:block}
+nav.mods a span{font-size:.76rem;color:var(--muted);display:block;line-height:1.3}
+.sidefoot{font-size:.74rem;color:var(--muted);padding:12px 6px 0;border-top:1px solid var(--line);margin-top:10px}
+
+.main{min-width:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top .ttl{flex:1;min-width:0}
+.top .ttl b{font:600 1rem var(--display);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .ttl span{font-size:.78rem;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v5 .top{border-image:linear-gradient(90deg,#FFCC00 33%,var(--fg) 33% 66%,#E5394B 66%) 1;border-top-width:3px;border-top-style:solid}
+.ibtn{min-height:40px;min-width:40px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;font-weight:500}
+.ibtn:hover{background:var(--surface2)}
+.ibtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.menu{display:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{min-height:38px;border:0;background:var(--surface);padding:0 11px;cursor:pointer;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+
+.page{padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px;max-width:1280px}
+.banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:.8rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.good{color:var(--good);border-color:currentColor;background:transparent}.chip.warn{color:var(--warn);border-color:currentColor;background:transparent}.chip.crit{color:var(--crit);border-color:currentColor;background:transparent}
+.chip.full{background:var(--sky-soft);color:var(--accent-text);border-color:transparent}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.card>h2{margin-bottom:10px}
+.grid{display:grid;gap:16px;min-width:0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.split{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi small{display:block;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.kpi b{font:600 1.55rem/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.kpi i{display:block;font-style:normal;font-size:.78rem;color:var(--muted)}
+
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.sel td{background:var(--sky-soft)}
+tbody tr[data-well]{cursor:pointer}
+tbody tr[data-well]:hover td{background:var(--surface2)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted);font-weight:500;min-width:0}
+input[type=text],input[type=search],select{min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 10px;font-size:16px;color:var(--fg);min-width:0;max-width:100%}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:32px}
+.btn{min-height:40px;border:0;background:var(--accent);color:#fff;border-radius:8px;padding:0 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.btn:hover{filter:brightness(1.08)}
+dl.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 16px;margin:0}
+dl.kv dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+dl.kv dd{margin:0;font-weight:500}
+svg text{font-family:var(--body)}
+.ax{fill:var(--muted);font-size:11px}
+.lbl{fill:var(--fg);font-size:11.5px;font-weight:600}
+.lbl2{fill:var(--muted);font-size:10.5px}
+.chart{width:100%;height:auto;display:block}
+.bar{height:10px;border-radius:3px;background:var(--c1)}
+.barrow{display:grid;grid-template-columns:70px minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:.82rem;padding:3px 0}
+.barwrap{background:var(--surface2);border-radius:3px}
+.mcard{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--fg);padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.mcard:hover{border-color:var(--accent)}
+.mcard b{font:600 1rem var(--display)}
+.mcard span.d{color:var(--muted);font-size:.84rem;flex:1}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:500;z-index:80;max-width:calc(100% - 32px)}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:18px;text-align:center;color:var(--muted);cursor:pointer;display:block}
+.drop:hover{border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.scrim{display:none}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;z-index:70;left:0;top:0;bottom:0;width:min(300px,86vw);transform:translateX(-100%);transition:transform .2s}
+  .side.open{transform:none}
+  .scrim.open{display:block;position:fixed;inset:0;background:rgba(10,17,26,.55);z-index:65}
+  .menu{display:inline-flex}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .hide-s{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app" id="root">
+  <aside class="side" id="side" aria-label="Módulos">
+    <a class="brand" href="#inicio" aria-label="Wellnexus, inicio">
+      <svg viewBox="0 0 80 80" aria-hidden="true"><rect width="80" height="80" rx="20" fill="#3E6A94"/><polyline points="16,22 28,56 40,30 52,56 64,22" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="22" r="4.5" fill="#BFE6FB"/><circle cx="28" cy="56" r="4.5" fill="#BFE6FB"/><circle cx="52" cy="56" r="4.5" fill="#BFE6FB"/><circle cx="64" cy="22" r="4.5" fill="#BFE6FB"/><circle cx="40" cy="30" r="7" fill="#7DD3FC" stroke="#3E6A94" stroke-width="2.5"/><g class="v5mark"><rect x="14" y="65" width="17.3" height="5" fill="#FFCC00"/><rect x="31.3" y="65" width="17.3" height="5" fill="#17212F"/><rect x="48.6" y="65" width="17.4" height="5" fill="#E5394B"/></g></svg>
+      <span><b>Wellnexus</b><small>Ingeniería de pozos y producción</small></span>
+    </a>
+    <div class="vbar"></div>
+    <nav class="mods" id="nav"></nav>
+    <div class="sidefoot">Prototipo navegable con datos de ejemplo. Elaborado por JH, octubre 2026.</div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="main">
+    <header class="top">
+      <button class="ibtn menu" id="menu" aria-label="Abrir módulos"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="ttl"><b id="tt">Inicio</b><span id="ts"></span></div>
+      <div class="seg hide-s" role="group" aria-label="Versión de marca"><button id="b4" aria-pressed="true" title="Versión 4, Acero y cielo">v4</button><button id="b5" aria-pressed="false" title="Versión 5, Venezuela">v5</button></div>
+      <button class="ibtn" id="theme" aria-label="Cambiar tema claro u oscuro" title="Tema"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+    </header>
+    <main class="page" id="view"></main>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r)=>(r||document).querySelector(s);
+const fmt=n=>Math.round(n).toLocaleString('es-CL');
+const OD={20:'20"',13.375:'13⅜"',9.625:'9⅝"',7:'7"',3.5:'3½"',2.875:'2⅞"'};
+const METODOS={flujo_natural:'Flujo natural',gas_lift_continuo:'Gas lift continuo',gas_lift_intermitente:'Gas lift intermitente',bombeo_mecanico:'Bombeo mecánico',bes:'BES',bcp:'BCP',plunger_lift:'Plunger lift'};
+const r50=v=>Math.round(v/50)*50;
+
+/* ---------- datos de ejemplo (ficticios) ---------- */
+function mk(id,campo,yac,metodo,estado,prof,qo,agua,x,y,tod){
+  const tb=r50(prof*0.9), pump=r50(prof*0.72), special=(metodo==='bes'||metodo==='bcp');
+  return {id,campo,yac,metodo,estado,prof,qo,agua,x,y,pump,
+    casings:[{t:'Conductor',od:20,top:0,base:350},{t:'Superficie',od:13.375,top:0,base:r50(prof*0.25)},{t:'Producción',od:9.625,top:0,base:r50(prof*0.7)},{t:'Liner',od:7,top:r50(prof*0.66),base:prof}],
+    tbg:{od:tod,base:special?pump:tb}, tb, pkr:r50(tb-80),
+    mand:[.25,.45,.62,.78].map(f=>r50(tb*f)),
+    perf:[[r50(prof*.93),r50(prof*.96)],[r50(prof*.97),r50(prof*.99)]]};
+}
+const WELLS=[
+  mk('CN-001','Campo Norte','Arena B-2','gas_lift_continuo','Activo',9200,420,22,18,26,3.5),
+  mk('CN-002','Campo Norte','Arena B-2','gas_lift_intermitente','Activo',8800,85,35,26,40,2.875),
+  mk('CN-003','Campo Norte','Arena C-1','bombeo_mecanico','Activo',6400,60,55,38,22,2.875),
+  mk('CN-004','Campo Norte','Arena C-1','bes','Activo',7800,950,70,34,48,3.5),
+  mk('CS-010','Campo Sur','Arena A-1','bcp','Activo',4200,140,40,62,72,2.875),
+  mk('CS-011','Campo Sur','Arena A-1','plunger_lift','Activo',5600,25,10,72,80,2.875),
+  mk('CS-012','Campo Sur','Arena A-2','flujo_natural','Activo',7100,310,15,52,86,3.5),
+  mk('CS-013','Campo Sur','Arena A-2','gas_lift_continuo','En intervención',8300,0,0,80,66,3.5),
+  mk('CE-020','Campo Este','Arena D-3','bes','Activo',9900,1250,62,84,30,3.5),
+  mk('CE-021','Campo Este','Arena D-3','bombeo_mecanico','Cerrado',5200,0,0,70,14,2.875)
+];
+const byId=id=>WELLS.find(w=>w.id===id)||WELLS[0];
+const state={well:'CN-001',brand:'v4'};
+function rng(seed){let s=seed;return()=>((s=(s*1664525+1013904223)%4294967296)/4294967296)}
+const stChip=e=>`<span class="chip ${e==='Activo'?'good':e==='Cerrado'?'crit':'warn'}">${e}</span>`;
+function history(w){ // 36 meses de caudal, declinación exponencial con ruido
+  const r=rng(w.id.charCodeAt(3)*97+w.id.charCodeAt(4)*13+w.prof), D=0.025+(w.prof%7)*0.004, q0=Math.max(w.qo,20)*Math.exp(D*35);
+  return Array.from({length:36},(_,t)=>[t,Math.max(0,q0*Math.exp(-D*t)*(1+0.07*(r()-0.5)))]);
+}
+
+/* ---------- gráficos ---------- */
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+let cid=0;
+function lineChart(o){
+  const W=640,H=o.h||300,l=58,r=18,t=14,b=44,id='c'+(++cid);
+  const sx=x=>l+x/o.xmax*(W-l-r), sy=y=>H-b-y/o.ymax*(H-t-b);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'Gráfica'}"><defs><clipPath id="${id}"><rect x="${l}" y="${t}" width="${W-l-r}" height="${H-t-b}"/></clipPath></defs>`;
+  for(let i=0;i<=5;i++){const v=o.ymax*i/5,y=sy(v);s+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text class="ax" x="${l-8}" y="${y+4}" text-anchor="end">${fmt(v)}</text>`}
+  for(let i=0;i<=(o.xt||6);i++){const v=o.xmax*i/(o.xt||6),x=sx(v);s+=`<text class="ax" x="${x}" y="${H-b+16}" text-anchor="middle">${fmt(v)}</text>`}
+  s+=`<text class="ax" x="${(l+W-r)/2}" y="${H-6}" text-anchor="middle">${o.xl}</text><text class="ax" transform="translate(12 ${(t+H-b)/2}) rotate(-90)" text-anchor="middle">${o.yl}</text>`;
+  s+=`<g clip-path="url(#${id})">`;
+  o.series.forEach((se,i)=>{
+    const d=se.pts.map((p,j)=>(j?'L':'M')+sx(p[0]).toFixed(1)+','+sy(p[1]).toFixed(1)).join('');
+    if(se.area&&se.pts.length){s+=`<path d="${d}L${sx(se.pts[se.pts.length-1][0])},${sy(0)}L${sx(se.pts[0][0])},${sy(0)}Z" fill="${se.color}" opacity=".12"/>`}
+    s+=`<path d="${d}" fill="none" stroke="${se.color}" stroke-width="${se.w||2.2}" ${se.dash?'stroke-dasharray="6 5"':''} stroke-linejoin="round"/>`;
+  });
+  s+='</g>';
+  (o.marks||[]).forEach(m=>{s+=`<circle cx="${sx(m.x)}" cy="${sy(m.y)}" r="5.5" fill="var(--surface)" stroke="var(--fg)" stroke-width="2.2"/><text class="lbl" x="${Math.min(sx(m.x)+10,W-110)}" y="${Math.max(sy(m.y)-10,t+12)}">${m.label}</text>`});
+  return s+'</svg>';
+}
+function legend(items){return `<div class="legend">${items.map(i=>`<span><i style="background:${i[1]}"></i>${i[0]}</span>`).join('')}</div>`}
+
+/* ---------- diagrama mecánico a escala ---------- */
+function drawWell(w,metodo,showL,showP){
+  const W=600,H=730,top=100,bot=670,cx=215;
+  const maxD=Math.ceil(w.prof*1.04/500)*500, Y=d=>top+d/maxD*(bot-top);
+  const cw=od=>12+od*8, tw=w.tbg.od*5+4, tb=w.tb, comps=[];
+  const casAt=d=>{const c=w.casings.filter(c=>c.od<20&&d>=c.top&&d<=c.base).pop();return c||w.casings[2]};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Diagrama mecánico del pozo ${w.id}, ${METODOS[metodo]}" style="width:100%;min-width:560px;height:auto;display:block">
+  <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--steel)" stroke-width="2"/></pattern></defs>`;
+  // eje de profundidad
+  const step=maxD>6000?2000:1000;
+  s+=`<text class="ax" x="64" y="${top-12}" text-anchor="end">Prof. (ft)</text><line x1="64" x2="64" y1="${top}" y2="${bot}" stroke="var(--line)"/>`;
+  for(let d=0;d<=maxD;d+=step){s+=`<line x1="58" x2="64" y1="${Y(d)}" y2="${Y(d)}" stroke="var(--muted)"/><text class="ax" x="52" y="${Y(d)+4}" text-anchor="end">${fmt(d)}</text>`}
+  s+=`<rect x="${cx-146}" y="${top}" width="292" height="${bot-top}" fill="var(--earth)"/>`;
+  w.casings.forEach(c=>{const x=cx-cw(c.od)/2,y1=Y(c.top),y2=Y(c.base);
+    s+=`<rect x="${x}" y="${y1}" width="${cw(c.od)}" height="${y2-y1}" fill="var(--bore)" stroke="var(--steel)" stroke-width="3"/><rect x="${x-3}" y="${y2-5}" width="9" height="5" fill="var(--steel)"/><rect x="${x+cw(c.od)-6}" y="${y2-5}" width="9" height="5" fill="var(--steel)"/>`;
+    comps.push({d:c.base,t:`${c.t} ${OD[c.od]}`,sub:`${fmt(c.top)} a ${fmt(c.base)} ft`,ax:x+cw(c.od)+3});
+  });
+  // línea de tubería y TD
+  s+=`<line x1="${cx-146}" x2="${cx+146}" y1="${Y(w.prof)}" y2="${Y(w.prof)}" stroke="var(--muted)" stroke-dasharray="4 4"/><text class="ax" x="${cx-140}" y="${Y(w.prof)-4}">TD ${fmt(w.prof)}</text>`;
+  s+=`<rect x="${cx-tw/2}" y="${top}" width="${tw}" height="${Y(w.tbg.base)-top}" fill="var(--bore2)" stroke="var(--tubstroke)" stroke-width="2.5"/>`;
+  comps.push({d:w.tbg.base*0.5,t:`Tubería ${OD[w.tbg.od]}`,sub:`0 a ${fmt(w.tbg.base)} ft`,ax:cx+tw/2});
+  if(showP)w.perf.forEach(p=>{const lw=cw(7);for(let y=Y(p[0]);y<=Y(p[1]);y+=7){s+=`<path d="M${cx-lw/2},${y} l-13,-3 M${cx+lw/2},${y} l13,-3" stroke="var(--perf)" stroke-width="2"/>`}
+    comps.push({d:(p[0]+p[1])/2,t:'Intervalo cañoneado',sub:`${fmt(p[0])} a ${fmt(p[1])} ft`,ax:cx+cw(7)/2+13});});
+  const pk=()=>{const pw=cw(casAt(w.pkr).od),y=Y(w.pkr);
+    s+=`<rect x="${cx-pw/2+1.5}" y="${y}" width="${pw/2-tw/2-1.5}" height="13" fill="var(--pk)"/><rect x="${cx+tw/2}" y="${y}" width="${pw/2-tw/2-1.5}" height="13" fill="var(--pk)"/>`;
+    comps.push({d:w.pkr,t:'Empacadura',sub:`${fmt(w.pkr)} ft`,ax:cx+pw/2-1.5});};
+  const glMand=()=>w.mand.forEach((m,i)=>{const y=Y(m),op=i===3;
+    s+=`<rect x="${cx+tw/2}" y="${y-8}" width="12" height="16" fill="var(--pk)" stroke="var(--tubstroke)" stroke-width="1"/><circle cx="${cx+tw/2+6}" cy="${y}" r="3.6" fill="${op?'var(--c2)':'var(--sky)'}" stroke="var(--tubstroke)" stroke-width=".8"/>`;
+    comps.push({d:m,t:`Mandril ${i+1}`,sub:`${op?'Válvula operadora':'Válvula de descarga'} · ${fmt(m)} ft`,ax:cx+tw/2+12});});
+  const gasInj=()=>{s+=`<path d="M${cx-110},${top-18} H${cx-16}" stroke="var(--c2)" stroke-width="3"/><path d="M${cx-24},${top-24} l9,6 l-9,6z" fill="var(--c2)"/><text class="lbl2" x="${cx-110}" y="${top-26}">Gas de inyección</text>`};
+  const head=()=>{s+=`<rect x="${cx-16}" y="${top-26}" width="32" height="26" fill="var(--steel)"/><rect x="${cx-6}" y="${top-62}" width="12" height="38" fill="var(--steel)"/><rect x="${cx+6}" y="${top-50}" width="44" height="9" fill="var(--steel)"/><line x1="${cx-146}" x2="${cx+146}" y1="${top}" y2="${top}" stroke="var(--steel)" stroke-width="2.5"/>`};
+  head();
+  if(metodo==='gas_lift_continuo'||metodo==='gas_lift_intermitente'){
+    gasInj();pk();glMand();
+    if(metodo==='gas_lift_intermitente'){const y=Y(tb);s+=`<circle cx="${cx}" cy="${y-6}" r="${tw/2-3}" fill="var(--c2)" stroke="var(--tubstroke)"/>`;comps.push({d:tb,t:'Válvula fija',sub:`${fmt(tb)} ft`,ax:cx+tw/2});}
+  }
+  if(metodo==='flujo_natural'){pk();const y=Y(tb*0.55);s+=`<rect x="${cx-tw/2-3}" y="${y}" width="${tw+6}" height="14" fill="var(--pk)"/><line x1="${cx-tw/2}" x2="${cx+tw/2}" y1="${y+7}" y2="${y+7}" stroke="var(--bore)" stroke-width="2" stroke-dasharray="3 3"/>`;comps.push({d:tb*0.55,t:'Camisa deslizante',sub:`${fmt(tb*0.55)} ft`,ax:cx+tw/2+3});
+    s+=`<rect x="${cx-tw/2-2}" y="${Y(tb)-6}" width="${tw+4}" height="6" fill="var(--steel)"/>`;comps.push({d:tb,t:'Niple de asiento',sub:`${fmt(tb)} ft`,ax:cx+tw/2});}
+  if(metodo==='bombeo_mecanico'){
+    const y=Y(w.pump);
+    s+=`<rect x="60" y="${top-12}" width="96" height="9" fill="var(--steel)"/><polygon points="96,${top-12} 120,${top-12} 108,${top-62}" fill="var(--steel)"/><path d="M64,${top-80} L${cx},${top-64}" stroke="var(--steel)" stroke-width="6" stroke-linecap="round"/><circle cx="108" cy="${top-62}" r="5" fill="var(--bore)" stroke="var(--steel)" stroke-width="2"/>`;
+    s+=`<line x1="${cx}" x2="${cx}" y1="${top-64}" y2="${y}" stroke="var(--steel)" stroke-width="2"/><rect x="${cx-tw/2+3}" y="${y}" width="${tw-6}" height="40" fill="var(--pump)" stroke="var(--tubstroke)"/><rect x="${cx-3}" y="${y+10}" width="6" height="20" fill="var(--tubstroke)"/>`;
+    s+=`<rect x="${cx-tw/2-1}" y="${Y(tb)-10}" width="${tw+2}" height="10" fill="var(--steel)"/>`;
+    comps.push({d:w.pump+20,t:'Bomba de subsuelo',sub:`${fmt(w.pump)} ft`,ax:cx+tw/2-3});
+    comps.push({d:w.pump*0.45,t:'Sarta de cabillas',sub:`0 a ${fmt(w.pump)} ft`,ax:cx+1});
+    comps.push({d:tb,t:'Ancla de gas',sub:`${fmt(tb)} ft`,ax:cx+tw/2+1});
+  }
+  if(metodo==='bes'){
+    const y=Y(w.pump),sx=cx-17;
+    s+=`<rect x="${cx+tw/2+4}" y="${top-40}" width="26" height="22" fill="var(--steel)"/><path d="M${cx+tw/2+17},${top-18} V${y+60}" stroke="var(--cable)" stroke-width="3" fill="none"/>`;
+    const parts=[['Bomba centrífuga',38,'var(--pump)'],['Succión',10,'var(--sky)'],['Sello protector',24,'var(--pk)'],['Motor',44,'var(--c2)']];
+    let yy=y;parts.forEach((p,i)=>{s+=`<rect x="${sx}" y="${yy}" width="34" height="${p[1]}" fill="${p[2]}" stroke="var(--tubstroke)" stroke-width="1.2"/>`;
+      comps.push({d:w.pump+(yy-y)*(maxD/(bot-top))+p[1]*0.5*(maxD/(bot-top)),t:p[0],sub:i===0?`${fmt(w.pump)} ft`:'',ax:sx+34});yy+=p[1]});
+  }
+  if(metodo==='bcp'){
+    const y=Y(w.pump);
+    s+=`<rect x="${cx-20}" y="${top-78}" width="40" height="26" fill="var(--steel)"/><rect x="${cx+20}" y="${top-72}" width="26" height="14" fill="var(--c2)"/><line x1="${cx}" x2="${cx}" y1="${top-52}" y2="${y+80}" stroke="var(--steel)" stroke-width="2"/>`;
+    s+=`<rect x="${cx-15}" y="${y}" width="30" height="76" fill="url(#hatch)" stroke="var(--tubstroke)" stroke-width="1.5"/><path d="M${cx},${y+4} q8,6 0,12 t0,12 t0,12 t0,12 t0,12" stroke="var(--c2)" stroke-width="3" fill="none"/>`;
+    s+=`<rect x="${cx-9}" y="${y+76}" width="18" height="10" fill="var(--steel)"/>`;
+    comps.push({d:w.pump+30,t:'Estator y rotor',sub:`${fmt(w.pump)} ft`,ax:cx+15});
+    comps.push({d:w.pump*0.45,t:'Sarta de cabillas',sub:`0 a ${fmt(w.pump)} ft`,ax:cx+1});
+    comps.push({d:w.pump+90,t:'Niple de paro',sub:'',ax:cx+9});
+  }
+  if(metodo==='plunger_lift'){
+    const ys=Y(tb);
+    s+=`<rect x="${cx-9}" y="${top-96}" width="18" height="36" fill="var(--steel)"/><path d="M${cx-9},${top-96} h18" stroke="var(--c2)" stroke-width="4"/>`;
+    s+=`<path d="M${cx-6},${ys-26} l12,3 l-12,3 l12,3 l-12,3 l12,3 l-12,3" stroke="var(--tubstroke)" stroke-width="2" fill="none"/><rect x="${cx-tw/2+3}" y="${ys-52}" width="${tw-6}" height="24" fill="var(--c2)" stroke="var(--tubstroke)"/><line x1="${cx-tw/2+3}" x2="${cx+tw/2-3}" y1="${ys-44}" y2="${ys-44}" stroke="var(--tubstroke)"/><line x1="${cx-tw/2+3}" x2="${cx+tw/2-3}" y1="${ys-36}" y2="${ys-36}" stroke="var(--tubstroke)"/>`;
+    s+=`<rect x="${cx-tw/2-2}" y="${ys-6}" width="${tw+4}" height="6" fill="var(--steel)"/>`;
+    comps.push({d:tb-130,t:'Émbolo (plunger)',sub:'',ax:cx+tw/2-3});
+    comps.push({d:tb-60,t:'Resorte amortiguador',sub:`${fmt(tb-60)} ft`,ax:cx+6});
+    comps.push({d:tb,t:'Válvula fija',sub:`${fmt(tb)} ft`,ax:cx+tw/2});
+    comps.push({d:-80,t:'Lubricador',sub:'En superficie',ax:cx+9});
+  }
+  // etiquetas
+  comps.sort((a,b)=>a.d-b.d);
+  const ly=comps.map(c=>Math.max(Y(Math.max(c.d,0))+(c.d<0?0:0),c.d<0?24:0));
+  comps.forEach((c,i)=>{ly[i]=c.d<0?30:Y(c.d);});
+  for(let i=1;i<ly.length;i++)ly[i]=Math.max(ly[i],ly[i-1]+30);
+  for(let i=ly.length-2;i>=0;i--)ly[i]=Math.min(ly[i],ly[i+1]-30);
+  if(showL)comps.forEach((c,i)=>{const y0=c.d<0?top-70:Y(c.d);
+    s+=`<path d="M${c.ax},${y0} L${cx+156},${y0} L${382},${ly[i]}" stroke="var(--muted)" stroke-width="1" fill="none"/><circle cx="${c.ax}" cy="${y0}" r="2.4" fill="var(--fg)"/><text class="lbl" x="388" y="${ly[i]+1}">${c.t}</text>${c.sub?`<text class="lbl2" x="388" y="${ly[i]+14}">${c.sub}</text>`:''}`;});
+  return {svg:s+'</svg>',comps};
+}
+
+/* ---------- vistas ---------- */
+const MODS=[
+ ['core','Core','Fichas de pozo','full'],['insight','Insight','Análisis de producción','full'],['flow','Flow','Simulación y análisis nodal','full'],['lift','Lift','Levantamiento artificial','mock'],
+ ['net','Net','Redes de producción','mock'],['draw','Draw','Diagramas mecánicos','full'],['ai','AI','Diagnóstico con IA','mock'],['live','Live','Tiempo real y mapa','mock'],
+ ['alert','Alert','Alertas y notificaciones','mock'],['bi','BI','Análisis BI','mock'],['report','Report','Reportería','mock'],['team','Team','Personal y organigrama','mock']];
+const DESC={core:'Datos, completación e historial de cada pozo, con carga masiva desde Excel y PowerPoint.',insight:'Producción por pozo y por campo, declinación y comparación.',flow:'Curvas de oferta y demanda, punto de operación y ajuste de correlaciones.',lift:'Gas lift continuo e intermitente, bombeo mecánico, BES, BCP, plunger lift.',net:'Redes de producción de uno o varios fluidos y balance de presiones.',draw:'Diagrama mecánico del pozo a escala con todas las completaciones.',ai:'Lectura de discos de gas lift por foto o escaneo, con diagnóstico.',live:'Estado de los pozos en un mapa interactivo, casi en tiempo real.',alert:'Reglas, avisos y seguimiento de lo que necesita atención.',bi:'Tableros por campo, método y período.',report:'Informes listos para entregar en PDF, Excel y PowerPoint.',team:'Equipos de Yacimientos, Optimización, BI y Control y Monitoreo con IA.'};
+const mod=id=>MODS.find(m=>m[0]===id);
+const head=(id)=>`<div class="banner"><span class="chip ${mod(id)[3]==='full'?'full':''}">${mod(id)[3]==='full'?'Pantalla de ejemplo':'Maqueta'}</span><span>Datos ficticios para ver cómo se vería la plataforma. No son cálculos de ingeniería validados.</span></div>`;
+const wellSel=(id,sel)=>`<label class="f">Pozo<select id="${id}">${WELLS.map(w=>`<option value="${w.id}" ${w.id===sel?'selected':''}>${w.id} · ${METODOS[w.metodo]}</option>`).join('')}</select></label>`;
+const V={};
+
+V.inicio={t:'Inicio',s:'Una sola plataforma para el pozo, la producción y el equipo',html(){
+  const act=WELLS.filter(w=>w.estado==='Activo'),tot=WELLS.reduce((a,w)=>a+w.qo,0),al=WELLS.filter(w=>w.estado!=='Activo'||w.agua>60).length;
+  return `<div><h1>Plataforma de ingeniería de pozos y producción</h1><p class="muted" style="margin-top:6px;max-width:68ch">Este prototipo muestra la interfaz completa. Core, Insight, Flow y Draw tienen pantallas de ejemplo con datos que se pueden mover. El resto son maquetas para validar la distribución.</p></div>
+  <div class="kpis"><div class="kpi"><small>Pozos de ejemplo</small><b>${WELLS.length}</b><i>${act.length} activos</i></div><div class="kpi"><small>Petróleo</small><b>${fmt(tot)}</b><i>bpd, suma del ejemplo</i></div><div class="kpi"><small>Con alerta</small><b>${al}</b><i>cerrados, en intervención o agua alta</i></div><div class="kpi"><small>Campos</small><b>3</b><i>Norte, Sur y Este</i></div></div>
+  <div class="grid g3">${MODS.map(m=>`<a class="mcard" href="#${m[0]}"><span class="row" style="justify-content:space-between"><b>${m[1]}</b><span class="chip ${m[3]==='full'?'full':''}">${m[3]==='full'?'Ejemplo':'Maqueta'}</span></span><span class="d">${DESC[m[0]]}</span><span class="muted" style="font-size:.78rem">${m[2]}</span></a>`).join('')}</div>`}};
+
+function coreList(){
+  const q=($('#cq')||{value:''}).value.toLowerCase(),m=($('#cm')||{value:''}).value;
+  const rows=WELLS.filter(w=>(!q||(w.id+w.campo+w.yac).toLowerCase().includes(q))&&(!m||w.metodo===m));
+  $('#clist').innerHTML=rows.map(w=>`<tr data-well="${w.id}" class="${w.id===state.well?'sel':''}"><td class="mono">${w.id}</td><td>${w.campo}</td><td>${METODOS[w.metodo]}</td><td class="n">${fmt(w.qo)}</td><td>${stChip(w.estado)}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Sin resultados.</td></tr>';
+}
+function coreFicha(){
+  const w=byId(state.well);
+  $('#ficha').innerHTML=`<div class="row" style="justify-content:space-between"><div><h2 class="mono" style="font-family:var(--display)">${w.id}</h2><span class="muted">${w.campo} · ${w.yac}</span></div><div class="row">${stChip(w.estado)}<span class="chip full">${METODOS[w.metodo]}</span></div></div>
+  <dl class="kv" style="margin:14px 0"><div><dt>Profundidad total</dt><dd class="mono">${fmt(w.prof)} ft</dd></div><div><dt>Petróleo</dt><dd class="mono">${fmt(w.qo)} bpd</dd></div><div><dt>Corte de agua</dt><dd class="mono">${w.agua} %</dd></div><div><dt>Tubería</dt><dd>${OD[w.tbg.od]} hasta ${fmt(w.tbg.base)} ft</dd></div></dl>
+  <h3>Revestimiento</h3><div class="tw"><table><thead><tr><th>Tipo</th><th class="n">Diámetro</th><th class="n">Tope (ft)</th><th class="n">Base (ft)</th></tr></thead><tbody>${w.casings.map(c=>`<tr><td>${c.t}</td><td class="n">${OD[c.od]}</td><td class="n">${fmt(c.top)}</td><td class="n">${fmt(c.base)}</td></tr>`).join('')}</tbody></table></div>
+  <h3 style="margin-top:14px">Equipos y accesorios</h3><div class="tw"><table><thead><tr><th>Equipo</th><th class="n">Profundidad (ft)</th></tr></thead><tbody>${['gas_lift_continuo','gas_lift_intermitente'].includes(w.metodo)?w.mand.map((m,i)=>`<tr><td>Mandril ${i+1}</td><td class="n">${fmt(m)}</td></tr>`).join('')+`<tr><td>Empacadura</td><td class="n">${fmt(w.pkr)}</td></tr>`:`<tr><td>${METODOS[w.metodo]}</td><td class="n">${fmt(w.metodo==='flujo_natural'||w.metodo==='plunger_lift'?w.tb:w.pump)}</td></tr>`}</tbody></table></div>
+  <h3 style="margin-top:14px">Intervalos</h3><div class="tw"><table><thead><tr><th>Arena</th><th class="n">Tope (ft)</th><th class="n">Base (ft)</th><th>Tipo</th></tr></thead><tbody>${w.perf.map(p=>`<tr><td>${w.yac}</td><td class="n">${fmt(p[0])}</td><td class="n">${fmt(p[1])}</td><td>Cañoneado</td></tr>`).join('')}</tbody></table></div>
+  <div class="row" style="margin-top:14px"><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="#draw">Ver diagrama mecánico</a><a class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center" href="#insight">Ver producción</a></div>`;
+}
+V.core={t:'Core',s:'Fichas de pozo',html(){return head('core')+`
+ <div class="split"><div class="card"><h2>Pozos</h2><div class="row" style="margin-bottom:10px"><label class="f" style="flex:1 1 140px">Buscar<input type="search" id="cq" placeholder="Pozo, campo o arena"></label><label class="f" style="flex:1 1 140px">Método<select id="cm"><option value="">Todos</option>${Object.entries(METODOS).map(e=>`<option value="${e[0]}">${e[1]}</option>`).join('')}</select></label></div>
+ <div class="tw"><table><thead><tr><th>Pozo</th><th>Campo</th><th>Método</th><th class="n">bpd</th><th>Estado</th></tr></thead><tbody id="clist"></tbody></table></div>
+ <div style="margin-top:14px"><h3>Carga masiva (ejemplo)</h3><p class="muted" style="font-size:.82rem;margin:4px 0 8px">Lee los Excel y PowerPoint de fichas y crea los pozos. Avance de ejemplo:</p><div class="barwrap"><div class="bar" style="width:46%"></div></div><p class="muted mono" style="font-size:.78rem;margin-top:4px">1.380 de 3.000 archivos · 46 %</p><button class="btn ghost" style="margin-top:8px" data-toast="La carga masiva todavía no está conectada en el prototipo.">Importar archivos</button></div></div>
+ <div class="card" id="ficha"></div></div>`},
+ init(){coreList();coreFicha();$('#cq').addEventListener('input',coreList);$('#cm').addEventListener('change',coreList);
+  $('#clist').addEventListener('click',e=>{const r=e.target.closest('[data-well]');if(r){state.well=r.dataset.well;coreList();coreFicha()}})}};
+
+V.draw={t:'Draw',s:'Diagramas mecánicos',html(){return head('draw')+`
+ <div class="card"><div class="row">${wellSel('dw',state.well)}<label class="f">Completación<select id="dm">${Object.entries(METODOS).map(e=>`<option value="${e[0]}">${e[1]}</option>`).join('')}</select></label>
+ <label class="row" style="margin-top:18px"><input type="checkbox" id="dl" checked> Etiquetas</label><label class="row" style="margin-top:18px"><input type="checkbox" id="dp" checked> Cañoneo</label>
+ <span class="row" style="margin-left:auto;margin-top:18px"><button class="btn ghost" data-toast="Exportar a PDF todavía no está disponible en el prototipo.">PDF</button><button class="btn ghost" data-toast="Exportar a PowerPoint todavía no está disponible en el prototipo.">PowerPoint</button></span></div></div>
+ <div class="grid g2" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)"><div class="card"><div class="tw" id="dsvg"></div></div><div class="card"><h2>Componentes</h2><div class="tw" id="dtab"></div><p class="muted" style="font-size:.8rem;margin-top:10px">Las profundidades y diámetros se dibujan a escala con los datos de Core. Cambiar la completación muestra cómo quedaría el mismo pozo con otro método.</p></div></div>`},
+ init(){const sel=$('#dw'),m=$('#dm'),draw=()=>{const w=byId(sel.value);state.well=w.id;const r=drawWell(w,m.value,$('#dl').checked,$('#dp').checked);$('#dsvg').innerHTML=r.svg;
+    $('#dtab').innerHTML=`<table><thead><tr><th>Componente</th><th class="n">Prof. (ft)</th></tr></thead><tbody>${r.comps.filter(c=>c.d>=0).sort((a,b)=>a.d-b.d).map(c=>`<tr><td>${c.t}</td><td class="n">${fmt(c.d)}</td></tr>`).join('')}</tbody></table>`};
+  m.value=byId(state.well).metodo;sel.addEventListener('change',()=>{m.value=byId(sel.value).metodo;draw()});m.addEventListener('change',draw);$('#dl').addEventListener('change',draw);$('#dp').addEventListener('change',draw);draw()}};
+
+V.insight={t:'Insight',s:'Análisis de producción',html(){return head('insight')+`
+ <div class="card"><div class="row"><label class="f">Ver<select id="iw"><option value="">Todos los pozos (campo completo)</option>${WELLS.filter(w=>w.qo>0).map(w=>`<option value="${w.id}">${w.id} · ${METODOS[w.metodo]}</option>`).join('')}</select></label></div></div>
+ <div class="grid g2" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)"><div class="card"><h2 id="it">Caudal de petróleo</h2><div id="ich"></div>${legend([['Historia','var(--c1)'],['Pronóstico por declinación exponencial','var(--c2)']])}</div>
+ <div class="card"><h2>Declinación</h2><dl class="kv" id="ist" style="grid-template-columns:1fr 1fr"></dl><h2 style="margin-top:18px">Mayores productores</h2><div id="irk"></div></div></div>`},
+ init(){const sel=$('#iw'),draw=()=>{
+   let h; if(sel.value){h=history(byId(sel.value))}else{h=Array.from({length:36},(_,t)=>[t,WELLS.filter(w=>w.qo>0).reduce((a,w)=>a+history(w)[t][1],0)])}
+   const n=h.length,xs=h.map(p=>p[0]),ys=h.map(p=>Math.log(p[1]+1e-6)),mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;
+   const b=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/xs.reduce((a,x)=>a+(x-mx)*(x-mx),0),a0=my-b*mx,D=-b;
+   const fc=Array.from({length:13},(_,i)=>[35+i,Math.exp(a0+b*(35+i))]),ymax=niceMax(Math.max(...h.map(p=>p[1]))*1.1);
+   $('#it').textContent=sel.value?`Caudal de ${sel.value}`:'Caudal del campo completo';
+   $('#ich').innerHTML=lineChart({xmax:48,ymax,xl:'Meses',yl:'Petróleo (bpd)',aria:'Historia y pronóstico de producción',series:[{pts:h,color:'var(--c1)',area:true},{pts:fc,color:'var(--c2)',dash:true}]});
+   $('#ist').innerHTML=`<div><dt>Declinación anual</dt><dd class="mono">${(100*(1-Math.exp(-12*D))).toFixed(1)} %</dd></div><div><dt>Caudal actual</dt><dd class="mono">${fmt(h[35][1])} bpd</dd></div><div><dt>En 12 meses</dt><dd class="mono">${fmt(fc[12][1])} bpd</dd></div><div><dt>Acumulado 36 m</dt><dd class="mono">${fmt(h.reduce((s,p)=>s+p[1]*30.4,0)/1000)} Mbbl</dd></div>`;
+   const top=WELLS.slice().sort((x,y)=>y.qo-x.qo).slice(0,6),mxq=top[0].qo;
+   $('#irk').innerHTML=top.map(w=>`<div class="barrow"><span class="mono">${w.id}</span><div class="barwrap"><div class="bar" style="width:${w.qo/mxq*100}%"></div></div><span class="mono" style="text-align:right">${fmt(w.qo)}</span></div>`).join('');
+  };sel.addEventListener('change',draw);draw()}};
+
+const F={pr:3200,qmax:2200,whp:150,glr:500,wc:20,id:2.441,adj:1,corr:'hb',depth:8000};
+const CORR={hb:['Hagedorn-Brown',1],bb:['Beggs-Brill',1.08],dr:['Duns-Ros',0.95],gr:['Gray',1.03],or:['Orkiszewski',1.05]};
+const iprF=q=>{const r=Math.min(q/F.qmax,1);return F.pr*((-0.2+Math.sqrt(0.04+3.2*(1-r)))/1.6)};
+const vlpF=q=>{const sg=F.wc/100*1.02+(1-F.wc/100)*0.85,g=0.433*sg/(1+F.glr/800),fr=9e-7*q*q*F.depth/Math.pow(F.id,4.8);return F.whp+(g*F.depth+fr)*CORR[F.corr][1]*F.adj};
+function flowDraw(){
+  const N=60,ipr=[],vlp=[];for(let i=0;i<=N;i++){const q=F.qmax*i/N;ipr.push([q,iprF(q)]);vlp.push([q,vlpF(q)])}
+  let op=null,msg='';
+  if(vlpF(0)>=F.pr){msg='Sin flujo: con estos datos la columna pesa más que la presión del yacimiento. Sube el gas de inyección o baja el corte de agua.'}
+  else{let prev=null;for(let q=0;q<=F.qmax;q+=2){const d=vlpF(q)-iprF(q);if(d>=0){op={q:q,p:iprF(q)};break}}
+    if(!op){op={q:F.qmax,p:iprF(F.qmax)};msg='Limitado por el yacimiento: la curva de demanda no corta la de oferta dentro del rango.'}}
+  const ymax=niceMax(Math.max(F.pr*1.05,Math.min(vlp[N][1],F.pr*1.5)));
+  $('#fch').innerHTML=lineChart({xmax:F.qmax,ymax,xl:'Caudal de líquido (bpd)',yl:'Presión de fondo fluyente (psi)',aria:'Curvas de oferta y demanda del pozo',series:[{pts:ipr,color:'var(--c1)',w:2.6},{pts:vlp,color:'var(--c2)',w:2.6}],marks:op&&!(vlpF(0)>=F.pr)?[{x:op.q,y:op.p,label:'Punto de operación'}]:[]});
+  $('#fres').innerHTML=op&&vlpF(0)<F.pr?`<div class="kpis"><div class="kpi"><small>Caudal</small><b>${fmt(op.q)}</b><i>bpd de líquido</i></div><div class="kpi"><small>Petróleo</small><b>${fmt(op.q*(1-F.wc/100))}</b><i>bpd</i></div><div class="kpi"><small>Presión de fondo</small><b>${fmt(op.p)}</b><i>psi</i></div><div class="kpi"><small>Gas de inyección</small><b>${fmt(op.q*F.glr/1000)}</b><i>Mscf/d aprox.</i></div></div>${msg?`<p class="muted" style="margin-top:8px">${msg}</p>`:''}`:`<p style="color:var(--crit);font-weight:500">${msg}</p>`;
+}
+V.flow={t:'Flow',s:'Simulación y análisis nodal',html(){
+  const sl=(k,l,min,max,st,u)=>`<label class="f"><span class="row" style="justify-content:space-between"><span>${l}</span><span class="mono" id="v_${k}" style="color:var(--fg)">${F[k]} ${u}</span></span><input type="range" id="s_${k}" min="${min}" max="${max}" step="${st}" value="${F[k]}"></label>`;
+  return head('flow')+`<div class="grid g2" style="grid-template-columns:minmax(0,320px) minmax(0,1fr)"><div class="card"><h2>Datos del pozo</h2><div style="display:flex;flex-direction:column;gap:12px">
+  ${sl('pr','Presión del yacimiento',1500,4500,50,'psi')}${sl('qmax','Caudal máximo del yacimiento',500,4000,50,'bpd')}${sl('whp','Presión en cabezal',50,500,10,'psi')}${sl('glr','Relación gas-líquido',0,2000,50,'scf/bbl')}${sl('wc','Corte de agua',0,95,1,'%')}${sl('adj','Factor de ajuste de correlación',0.5,1.5,0.01,'')}
+  <label class="f">Correlación de flujo<select id="s_corr">${Object.entries(CORR).map(e=>`<option value="${e[0]}">${e[1][0]}</option>`).join('')}</select></label>
+  <label class="f">Diámetro interno de tubería<select id="s_id"><option value="1.995">2⅜" (1,995 in)</option><option value="2.441" selected>2⅞" (2,441 in)</option><option value="2.992">3½" (2,992 in)</option></select></label></div></div>
+  <div class="card"><h2>Oferta y demanda</h2><div id="fch"></div>${legend([['Oferta del yacimiento (IPR, tipo Vogel)','var(--c1)'],['Demanda de la tubería (VLP)','var(--c2)']])}<div id="fres" style="margin-top:14px"></div>
+  <p class="muted" style="font-size:.78rem;margin-top:12px">Las curvas usan fórmulas simplificadas para mostrar cómo responde la pantalla. El cálculo real usará las correlaciones completas y se validará con resultados que aportes.</p></div></div>`},
+ init(){['pr','qmax','whp','glr','wc','adj'].forEach(k=>{$('#s_'+k).addEventListener('input',e=>{F[k]=parseFloat(e.target.value);$('#v_'+k).textContent=F[k]+' '+({pr:'psi',qmax:'bpd',whp:'psi',glr:'scf/bbl',wc:'%',adj:''})[k];flowDraw()})});
+  $('#s_corr').value=F.corr;$('#s_corr').addEventListener('change',e=>{F.corr=e.target.value;flowDraw()});$('#s_id').addEventListener('change',e=>{F.id=parseFloat(e.target.value);flowDraw()});flowDraw()}};
+
+V.lift={t:'Lift',s:'Levantamiento artificial',html(){return head('lift')+`
+ <div class="grid g2"><div class="card"><h2>Selector de método</h2><div style="display:flex;flex-direction:column;gap:12px">
+ <label class="f"><span class="row" style="justify-content:space-between"><span>Profundidad</span><span class="mono" id="lv_d" style="color:var(--fg)">7000 ft</span></span><input type="range" id="ls_d" min="2000" max="14000" step="500" value="7000"></label>
+ <label class="f"><span class="row" style="justify-content:space-between"><span>Caudal objetivo</span><span class="mono" id="lv_q" style="color:var(--fg)">600 bpd</span></span><input type="range" id="ls_q" min="20" max="5000" step="20" value="600"></label>
+ <label class="f"><span class="row" style="justify-content:space-between"><span>Relación gas-petróleo</span><span class="mono" id="lv_g" style="color:var(--fg)">400 scf/bbl</span></span><input type="range" id="ls_g" min="50" max="3000" step="50" value="400"></label></div>
+ <p class="muted" style="font-size:.78rem;margin-top:12px">Reglas generales para ilustrar la pantalla. No sustituyen un diseño.</p></div>
+ <div class="card"><h2>Métodos</h2><div id="lres" style="display:flex;flex-direction:column;gap:8px"></div></div></div>`},
+ init(){const R=[['Gas lift','Necesita gas disponible',(d,q,g)=>g>=250&&d<=13000&&q>=100],['Bombeo mecánico','Pozos someros y caudales bajos',(d,q)=>d<=8000&&q<=600],['BES','Caudales altos',(d,q,g)=>q>=400&&d<=12000&&g<=800],['BCP','Crudos viscosos y pozos poco profundos',(d,q)=>d<=6000&&q<=1500],['Plunger lift','Mucho gas y poco líquido',(d,q,g)=>g>=1000&&q<=100]];
+  const up=()=>{const d=+$('#ls_d').value,q=+$('#ls_q').value,g=+$('#ls_g').value;$('#lv_d').textContent=fmt(d)+' ft';$('#lv_q').textContent=fmt(q)+' bpd';$('#lv_g').textContent=fmt(g)+' scf/bbl';
+   $('#lres').innerHTML=R.map(r=>{const ok=r[2](d,q,g);return `<div class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:8px 12px"><div><b>${r[0]}</b><div class="muted" style="font-size:.78rem">${r[1]}</div></div><span class="chip ${ok?'good':''}">${ok?'Posible':'Poco adecuado'}</span></div>`}).join('')};
+  ['d','q','g'].forEach(k=>$('#ls_'+k).addEventListener('input',up));up()}};
+
+V.net={t:'Net',s:'Redes de producción',html(){
+  const nodes=[['CN-001',40,40],['CN-002',40,100],['CN-004',40,160],['CS-010',40,230],['CE-020',40,300]],man=[[250,100],[250,240]],st=[470,170];
+  const edges=[[0,0],[1,0],[2,0],[3,1],[4,1]];
+  return head('net')+`<div class="card"><h2>Red de ejemplo</h2><div class="tw"><svg viewBox="0 0 620 340" style="width:100%;min-width:560px" role="img" aria-label="Red de producción de ejemplo con cinco pozos, dos colectores y una estación">
+  ${edges.map(e=>`<path d="M${nodes[e[0]][1]+70},${nodes[e[0]][2]} L${man[e[1]][0]-10},${man[e[1]][1]}" stroke="var(--c1)" stroke-width="2.4" fill="none"/>`).join('')}
+  ${man.map(m=>`<path d="M${m[0]+10},${m[1]} L${st[0]-20},${st[1]}" stroke="var(--c2)" stroke-width="4" fill="none"/>`).join('')}
+  ${nodes.map(n=>`<rect x="${n[1]}" y="${n[2]-16}" width="70" height="32" rx="6" fill="var(--surface2)" stroke="var(--line)"/><text class="lbl" x="${n[1]+35}" y="${n[2]+4}" text-anchor="middle">${n[0]}</text>`).join('')}
+  ${man.map((m,i)=>`<circle cx="${m[0]}" cy="${m[1]}" r="12" fill="var(--c1)"/><text class="ax" x="${m[0]}" y="${m[1]+28}" text-anchor="middle">Colector ${i+1}</text>`).join('')}
+  <rect x="${st[0]-20}" y="${st[1]-34}" width="130" height="68" rx="8" fill="var(--sky-soft)" stroke="var(--accent)"/><text class="lbl" x="${st[0]+45}" y="${st[1]-4}" text-anchor="middle">Estación</text><text class="lbl2" x="${st[0]+45}" y="${st[1]+14}" text-anchor="middle">Separación</text>
+  <text class="lbl2" x="170" y="86">480 psi</text><text class="lbl2" x="170" y="270">395 psi</text><text class="lbl2" x="380" y="190">320 psi</text></svg></div>
+  <p class="muted" style="font-size:.8rem;margin-top:8px">Las presiones son de ejemplo. En la versión real, cada tubo tendrá longitud, diámetro y fluidos, y la red se resolverá por balance.</p></div>`}};
+
+V.ai={t:'AI',s:'Diagnóstico con IA',html(){
+  const pts=(a,b,k)=>Array.from({length:97},(_,i)=>{const th=i/96*2*Math.PI,r=a+b*Math.sin(th*k)+(i%7)*0.9;return `${(130+r*Math.sin(th)).toFixed(1)},${(130-r*Math.cos(th)).toFixed(1)}`}).join(' ');
+  return head('ai')+`<div class="grid g2"><div class="card"><h2>Disco de ejemplo</h2><div id="disc" style="max-width:300px;margin:auto"><svg viewBox="0 0 260 260" role="img" aria-label="Disco de registro con dos trazas" style="width:100%"><circle cx="130" cy="130" r="122" fill="var(--surface2)" stroke="var(--line)"/>${[30,55,80,105].map(r=>`<circle cx="130" cy="130" r="${r}" fill="none" stroke="var(--line)"/>`).join('')}${Array.from({length:12},(_,i)=>`<line x1="130" y1="130" x2="${130+120*Math.sin(i*Math.PI/6)}" y2="${130-120*Math.cos(i*Math.PI/6)}" stroke="var(--line)"/>`).join('')}<polyline points="${pts(78,10,4)}" fill="none" stroke="var(--c1)" stroke-width="2"/><polyline points="${pts(52,6,4)}" fill="none" stroke="var(--c2)" stroke-width="2"/></svg></div>
+  <label class="drop" for="ufile" style="margin-top:12px">Subir foto o escaneo de un disco<input type="file" id="ufile" accept="image/*" style="display:block;margin:8px auto 0;max-width:100%"></label></div>
+  <div class="card"><h2>Diagnóstico de ejemplo</h2><div class="row" style="margin-bottom:10px"><span class="chip warn">Atención</span><span class="muted">Confianza 82 %, valor ilustrativo</span></div><p>La presión de inyección oscila con cuatro ciclos por vuelta. Es un patrón típico de una válvula que abre y cierra de forma inestable.</p>
+  <h3 style="margin-top:14px">Qué revisar</h3><ul style="margin:6px 0 0;padding-left:18px"><li>Tamaño del orificio de la válvula operadora.</li><li>Presión de inyección en superficie.</li><li>Comparar con el disco de la semana anterior.</li></ul>
+  <p class="muted" style="font-size:.78rem;margin-top:12px">Texto de ejemplo para mostrar el resultado. La lectura de imágenes aún no está conectada.</p></div></div>`},
+ init(){$('#ufile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('#disc').innerHTML=`<img src="${r.result}" alt="Disco subido" style="width:100%;border-radius:8px">`};r.readAsDataURL(f)})}};
+
+V.live={t:'Live',s:'Tiempo real y mapa',html(){return head('live')+`<div class="split" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)"><div class="card"><div class="tw"><svg viewBox="0 0 100 100" style="width:100%;min-width:380px;background:var(--earth);border-radius:8px" role="img" aria-label="Mapa de pozos de ejemplo">
+  <path d="M0,30 C25,18 45,48 100,34 M0,55 C30,44 55,70 100,58 M0,80 C28,70 60,92 100,84" stroke="var(--line)" stroke-width=".5" fill="none"/>
+  ${WELLS.map(w=>`<g data-pt="${w.id}" style="cursor:pointer" tabindex="0" role="button" aria-label="${w.id}"><circle cx="${w.x}" cy="${w.y}" r="${w.qo>0?3+Math.sqrt(w.qo)/12:3}" fill="${w.estado==='Activo'?'var(--good)':w.estado==='Cerrado'?'var(--crit)':'var(--warn)'}" opacity=".85" stroke="var(--surface)" stroke-width=".6"/><text x="${w.x}" y="${w.y-5.5}" font-size="3.2" text-anchor="middle" fill="var(--fg)">${w.id}</text></g>`).join('')}</svg></div>${legend([['Activo','var(--good)'],['En intervención','var(--warn)'],['Cerrado','var(--crit)']])}</div>
+  <div class="card" id="lpanel"></div></div>`},
+ init(){const show=id=>{const w=byId(id);$('#lpanel').innerHTML=`<h2 class="mono" style="font-family:var(--display)">${w.id}</h2><p class="muted">${w.campo} · ${METODOS[w.metodo]}</p><dl class="kv" style="margin-top:12px"><div><dt>Estado</dt><dd>${stChip(w.estado)}</dd></div><div><dt>Petróleo</dt><dd class="mono">${fmt(w.qo)} bpd</dd></div><div><dt>Presión cabezal</dt><dd class="mono">${w.qo?fmt(120+w.prof/60):'0'} psi</dd></div><div><dt>Última lectura</dt><dd>hace 2 min</dd></div></dl><p class="muted" style="font-size:.78rem;margin-top:12px">Valores de ejemplo. Selecciona un punto del mapa.</p>`};
+  show(state.well);document.querySelectorAll('[data-pt]').forEach(g=>{const f=()=>{state.well=g.dataset.pt;show(g.dataset.pt)};g.addEventListener('click',f);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')f()})})}};
+
+const ALERTS=[['crit','CS-013','Pozo en intervención con más de 10 días','Hace 3 h'],['crit','CE-021','Pozo cerrado sin causa registrada','Hace 1 día'],['warn','CN-004','Corte de agua sobre 60 %','Hace 5 h'],['warn','CE-020','Corte de agua sobre 60 %','Hace 5 h'],['warn','CN-003','Caudal bajo lo esperado para bombeo mecánico','Hace 2 días'],['info','CN-001','Disco de gas lift pendiente de revisar','Hace 1 h']];
+V.alert={t:'Alert',s:'Alertas y notificaciones',html(){return head('alert')+`<div class="card"><div class="seg" style="margin-bottom:12px" id="afl"><button data-f="" aria-pressed="true">Todas</button><button data-f="crit" aria-pressed="false">Críticas</button><button data-f="warn" aria-pressed="false">Advertencias</button><button data-f="info" aria-pressed="false">Avisos</button></div><div id="alist" style="display:flex;flex-direction:column;gap:8px"></div></div>`},
+ init(){const up=f=>{$('#alist').innerHTML=ALERTS.filter(a=>!f||a[0]===f).map(a=>`<div class="row" style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;justify-content:space-between"><div class="row"><span class="chip ${a[0]==='info'?'':a[0]}">${a[0]==='crit'?'Crítica':a[0]==='warn'?'Advertencia':'Aviso'}</span><b class="mono">${a[1]}</b><span>${a[2]}</span></div><span class="muted" style="font-size:.78rem">${a[3]}</span></div>`).join('')};
+  up('');$('#afl').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#afl button').forEach(x=>x.setAttribute('aria-pressed',x===b));up(b.dataset.f)})}};
+
+V.bi={t:'BI',s:'Análisis BI',html(){
+  const campos=['Campo Norte','Campo Sur','Campo Este'].map(c=>[c,WELLS.filter(w=>w.campo===c).reduce((a,w)=>a+w.qo,0)]),mx=Math.max(...campos.map(c=>c[1]));
+  const ms=Object.keys(METODOS).map(k=>[k,WELLS.filter(w=>w.metodo===k).length]).filter(m=>m[1]),tot=ms.reduce((a,m)=>a+m[1],0),cols=['var(--c1)','var(--c2)','var(--c3)','var(--sky)','var(--pk)','var(--warn)','var(--steel)'];
+  let a=-Math.PI/2,arcs='';ms.forEach((m,i)=>{const b=a+m[1]/tot*2*Math.PI,x1=60+48*Math.cos(a),y1=60+48*Math.sin(a),x2=60+48*Math.cos(b),y2=60+48*Math.sin(b);arcs+=`<path d="M${x1},${y1} A48,48 0 ${b-a>Math.PI?1:0} 1 ${x2},${y2}" fill="none" stroke="${cols[i]}" stroke-width="18"/>`;a=b});
+  return head('bi')+`<div class="grid g2"><div class="card"><h2>Petróleo por campo (bpd)</h2>${campos.map(c=>`<div class="barrow" style="grid-template-columns:100px minmax(0,1fr) 64px"><span>${c[0]}</span><div class="barwrap"><div class="bar" style="width:${c[1]/mx*100}%"></div></div><span class="mono" style="text-align:right">${fmt(c[1])}</span></div>`).join('')}</div>
+  <div class="card"><h2>Pozos por método</h2><div class="row" style="gap:20px"><svg viewBox="0 0 120 120" style="width:140px;flex:none" role="img" aria-label="Pozos por método">${arcs}<text x="60" y="66" text-anchor="middle" font-size="20" font-weight="600" fill="var(--fg)" font-family="var(--mono)">${tot}</text></svg>${legend(ms.map((m,i)=>[`${METODOS[m[0]]} (${m[1]})`,cols[i]])).replace('class="legend"','class="legend" style="flex-direction:column"')}</div></div></div>`}};
+
+V.report={t:'Report',s:'Reportería',html(){const R=[['Ficha de pozo','PDF','Datos, diagrama y equipos de un pozo.'],['Resumen mensual de producción','Excel','Caudales y acumulados por pozo y campo.'],['Diagrama mecánico','PowerPoint','Diagrama editable como los de las fichas actuales.'],['Informe de intervención','PDF','Antes y después de un trabajo en el pozo.']];
+  return head('report')+`<div class="grid g2">${R.map(r=>`<div class="card"><div class="row" style="justify-content:space-between"><h2>${r[0]}</h2><span class="chip">${r[1]}</span></div><p class="muted" style="margin:6px 0 12px">${r[2]}</p><button class="btn" data-toast="La generación de informes todavía no está conectada en el prototipo.">Generar</button></div>`).join('')}</div>`}};
+
+V.team={t:'Team',s:'Personal y organigrama',html(){const G=['Yacimientos','Optimización','BI','Control y Monitoreo con IA'];return head('team')+`<div class="card"><div class="tw"><svg viewBox="0 0 700 270" style="width:100%;min-width:600px" role="img" aria-label="Organigrama de ejemplo">
+  <rect x="270" y="10" width="160" height="40" rx="8" fill="var(--accent)"/><text x="350" y="35" text-anchor="middle" fill="#fff" font-size="13" font-weight="600" font-family="var(--display)">Gerencia</text>
+  <path d="M350,50 V80 M95,80 H605 ${G.map((g,i)=>`M${95+i*170},80 V100`).join(' ')}" stroke="var(--muted)" fill="none"/>
+  ${G.map((g,i)=>`<rect x="${20+i*170}" y="100" width="150" height="46" rx="8" fill="var(--sky-soft)" stroke="var(--accent)"/><text x="${95+i*170}" y="${g.length>14?121:128}" text-anchor="middle" class="lbl" ${g.length>14?'font-size="11"':''}>${g.length>14?'Control y Monitoreo':g}</text>${g.length>14?`<text x="${95+i*170}" y="136" text-anchor="middle" class="lbl" font-size="11">con IA</text>`:''}<path d="M${95+i*170},146 V170" stroke="var(--muted)"/><rect x="${30+i*170}" y="170" width="130" height="34" rx="6" fill="var(--surface2)" stroke="var(--line)"/><text x="${95+i*170}" y="191" text-anchor="middle" class="ax">Ingeniería</text><rect x="${30+i*170}" y="214" width="130" height="34" rx="6" fill="var(--surface2)" stroke="var(--line)"/><text x="${95+i*170}" y="235" text-anchor="middle" class="ax">Analista</text>`).join('')}</svg></div><p class="muted" style="font-size:.8rem;margin-top:8px">Estructura de ejemplo. Cada recuadro mostrará personas, cargos y pozos asignados.</p></div>`}};
+
+/* ---------- shell ---------- */
+$('#nav').innerHTML=MODS.map(m=>`<a href="#${m[0]}" data-m="${m[0]}"><b>${m[1]}</b><span>${m[2]}</span></a>`).join('');
+function route(){
+  const id=(location.hash||'#inicio').slice(1),v=V[id]||V.inicio,k=V[id]?id:'inicio';
+  $('#view').innerHTML=v.html();$('#tt').textContent=v.t;$('#ts').textContent=v.s;if(v.init)v.init();
+  document.querySelectorAll('#nav a').forEach(a=>a.getAttribute('data-m')===k?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
+  $('#side').classList.remove('open');$('#scrim').classList.remove('open');window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+$('#menu').addEventListener('click',()=>{$('#side').classList.add('open');$('#scrim').classList.add('open')});
+$('#scrim').addEventListener('click',()=>{$('#side').classList.remove('open');$('#scrim').classList.remove('open')});
+let tt;document.addEventListener('click',e=>{const b=e.target.closest('[data-toast]');if(!b)return;document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=b.dataset.toast;document.body.appendChild(t);clearTimeout(tt);tt=setTimeout(()=>t.remove(),3200)});
+function setBrand(v){state.brand=v;$('#root').classList.toggle('v5',v==='v5');document.querySelectorAll('.v5mark').forEach(g=>g.style.display=v==='v5'?'':'none');$('#b4').setAttribute('aria-pressed',v==='v4');$('#b5').setAttribute('aria-pressed',v==='v5')}
+$('#b4').addEventListener('click',()=>setBrand('v4'));$('#b5').addEventListener('click',()=>setBrand('v5'));
+$('#theme').addEventListener('click',()=>{const d=document.documentElement,cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=cur==='dark'?'light':'dark';d.setAttribute('data-theme',n);try{localStorage.setItem('wx-theme',n)}catch(e){}});
+try{const t=localStorage.getItem('wx-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}
+setBrand('v4');route();
+})();
+</script>

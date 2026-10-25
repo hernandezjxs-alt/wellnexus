@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@import "@fontsource-variable/sora";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/* Marca Wellnexus v4 "Acero y cielo". Tokens claros; el oscuro los redefine. */
+:root {
+  --bg:#EDF1F5; --surface:#FFFFFF; --surface2:#F5F8FB; --line:#D4DDE7;
+  --fg:#17212F; --muted:#586A7E; --accent:#3E6A94; --accent-text:#2E5A84;
+  --sky:#7DD3FC; --sky-soft:#DDF2FD;
+  --c1:#3E6A94; --c2:#CC7A22; --c3:#23895B;
+  --good:#23895B; --warn:#B7791F; --crit:#C93B47;
+  --earth:#D9E1E9; --steel:#46586D; --bore:#FFFFFF; --bore2:#EAF4FB; --tubstroke:#17212F; --pk:#3E6A94; --cable:#CC7A22; --pump:#7DD3FC; --perf:#C93B47;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0D1520; --surface:#142030; --surface2:#1A2A3D; --line:#27384D;
+    --fg:#E6ECF2; --muted:#93A5B8; --accent-text:#7DD3FC; --sky-soft:#17344A;
+    --c1:#7DD3FC; --c2:#F0A04B; --c3:#4CC38A; --good:#4CC38A; --warn:#E3B04F; --crit:#F07C86;
+    --earth:#0A1119; --steel:#8FA4BB; --bore:#0F1A28; --bore2:#12263A; --tubstroke:#E6ECF2; --pk:#5B94C4; --cable:#F0A04B; --perf:#F07C86;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#0D1520; --surface:#142030; --surface2:#1A2A3D; --line:#27384D;
+  --fg:#E6ECF2; --muted:#93A5B8; --accent-text:#7DD3FC; --sky-soft:#17344A;
+  --c1:#7DD3FC; --c2:#F0A04B; --c3:#4CC38A; --good:#4CC38A; --warn:#E3B04F; --crit:#F07C86;
+  --earth:#0A1119; --steel:#8FA4BB; --bore:#0F1A28; --bore2:#12263A; --tubstroke:#E6ECF2; --pk:#5B94C4; --cable:#F0A04B; --perf:#F07C86;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-crit: var(--crit);
+  --font-display: "Sora Variable", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html { overflow-x: hidden; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; overflow-x: hidden; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+input, select, button { font: inherit; }
+input[type="text"], input[type="email"], input[type="password"], input[type="search"], select { font-size: 16px; }
+svg text { font-family: var(--font-sans); }
+.ax { fill: var(--muted); font-size: 11px; }
+.lbl { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+.lbl2 { fill: var(--muted); font-size: 10.5px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Variante Venezuela (v5): franja tricolor solo cuando la marca es v5 */
+.v5-only { display: none; }
+:root[data-brand="v5"] .v5-only { display: inline; }
+.tri-bar { display: none; height: 3px; background: linear-gradient(90deg, #FFCC00 33%, var(--fg) 33% 66%, #E5394B 66%); }
+:root[data-brand="v5"] .tri-bar { display: block; }
