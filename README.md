@@ -1,49 +1,80 @@
-# Respaldo – Proyecto Wellnexus
-Fecha: 2026-10-25 · Autor: Jesús Hernández (Jesush)
+# Wellnexus
 
-## Qué es
-Súper aplicación web para la industria petrolera que replica y mejora Centinela (fichas de pozo de PDVSA, ~1500 Excel + ~1500 PowerPoint) e integra en una sola interfaz moderna:
-1. Fichas de pozo / repositorio de datos (>1 GB)
-2. Análisis de producción tipo OFM
-3. Simulación tipo PIPESIM/WellFlo: análisis nodal, gas lift continuo e intermitente, bombeo mecánico, BES, BCP, todas las correlaciones de flujo con ajuste manual interactivo
-4. Editor de diagramas mecánicos de pozo (exporta a PDF/PowerPoint)
-5. Integración de INTER 1.1 (gas lift intermitente) y GW Basic
-6. IA – "RAP moderno": diagnóstico por foto/escaneo de discos de gas lift, discos digitales, tiempo real en mapa interactivo
-7. Simulación de redes mono y multifásicas (tipo PIPESIM Net / Weatherford ReO)
-8. Alertas
-9. Análisis BI
-10. Reportería
-11. Gestión de personal / organigrama (Yacimientos, Optimización, BI, Control y Monitoreo con IA)
+**Súper aplicación web para ingeniería de pozos y producción petrolera.**
+Reúne en una sola interfaz moderna lo que hoy está repartido en fichas de Excel y PowerPoint, simuladores y herramientas sueltas: datos de pozo, análisis de producción, simulación, diagramas mecánicos, diagnóstico con IA, redes, alertas, BI, reportes y organigrama.
 
-## Stack propuesto
-Postgres (Neon/Supabase Pro) + TimescaleDB · Cloudflare R2 (archivos) · FastAPI (Python: pandas, openpyxl, python-pptx, SciPy/NumPy) · Next.js + Tailwind + shadcn · Plotly/Recharts/D3 · MapLibre · Konva/React Flow · MQTT/OPC-UA · OpenCV (fotos de discos).
+- Autor: Jesús Hernández (Jesush) · Ingeniero de petróleo, ~15 años en optimización de producción (PDVSA), hoy BI/Data Analyst
+- Estado: diseño y arquitectura (2026-10-25). Todavía no hay versión ejecutable.
+- Mercado inicial: Venezuela (con variante de marca propia).
 
-## Límites legales acordados
-- No se extrae código, librerías ni fórmulas internas de simuladores comerciales (WellFlo, PIPESIM, ISIS), aunque sean versiones viejas. Se construye con literatura pública y se valida comparando resultados que tú aportes.
-- "Centinela" es marca de PDVSA: la plataforma debe ser independiente.
+## Módulos
 
-## Nombre
-Elegido: **Wellnexus** (riesgo medio de marca: similar a Wellnex / Wellnex Life). Descartados: Wellhub, Welltrix, Centinel Wells.
-Pendiente: consulta INAPI (Chile), SAPI (Venezuela), dominios y abogado de marcas.
+| # | Módulo | Qué hace | Referencia |
+|---|---|---|---|
+| 1 | **Core** | Fichas de pozo: datos, completación, historial, archivos. Carga masiva desde ~1500 Excel y ~1500 PowerPoint | Réplica mejorada de Centinela |
+| 2 | **Insight** | Análisis de producción: curvas de declinación, mapas de burbujas, comparación de pozos | Tipo OFM |
+| 3 | **Flow** | Simulación y análisis nodal (IPR/VLP, PVT, todas las correlaciones de flujo con ajuste manual interactivo) | Tipo PIPESIM / WellFlo |
+| 4 | **Lift** | Levantamiento artificial: gas lift continuo e intermitente, bombeo mecánico, BES, BCP, plunger lift, hidráulico. Integra INTER 1.1 y GW Basic | — |
+| 5 | **Net** | Redes de producción mono y multifásicas, balance de red | Tipo PIPESIM Net / ReO |
+| 6 | **Draw** | Editor de diagramas mecánicos de pozo a escala, con todas las completaciones. Exporta a PDF y PowerPoint editable | Mejora de `draw/well-completion-v5.jsx` |
+| 7 | **AI** | Diagnóstico con IA: "RAP moderno" por foto/escaneo de discos de gas lift y discos digitales | — |
+| 8 | **Live** | Tiempo real y mapa interactivo de pozos | MQTT / OPC-UA |
+| 9 | **Alert** | Alertas y notificaciones por reglas | — |
+| 10 | **BI** | Análisis BI: tableros e indicadores | — |
+| 11 | **Report** | Reportería automática (PDF, Excel, PowerPoint) | — |
+| 12 | **Team** | Personal y organigrama (Yacimientos, Optimización, BI, Control y Monitoreo con IA) | — |
 
-## Logotipo – DEFINITIVO: versión 4 (Acero y cielo) y versión 5 (variante Venezuela)
-Paleta: Pizarra #17212F · Azul acero #3E6A94 · Celeste #7DD3FC · Gris niebla #E6ECF2 · (v5 suma Amarillo #FFCC00 y Rojo #E5394B). Tipografía: Sora. Archivos finales en carpeta `logos-definitivos/` (SVG con texto en curvas + PNG).
+## Tecnología
 
-Versiones exploradas (descartadas):
-| Versión | Colores |
+| Capa | Elección |
 |---|---|
-| 1 Índigo y menta | Tinta #101528 · Índigo #4F46E5 · Menta #34D399 · Lavanda #E0E7FF |
-| 2 Grafito y coral | Grafito #1C1F24 · Coral #FF6B4A · Arena #F4EEE6 · Niebla #D9CFC1 |
-| 3 Bosque y lima | Bosque #0F3D3E · Lima #C6F432 · Bruma #EAF2EE · Carbón #12201F |
-Primera versión descartada: navy #0B1F33 / teal #14B8A6 / ámbar #F5A524. Tricolor Venezuela también descartado (colores no gustaron).
-Fuentes editables: `logos/` (v4, v5 y módulos) y `logotipo/explorados/` (versiones descartadas).
+| Interfaz | TypeScript, Next.js, React, Tailwind, shadcn/ui |
+| Gráficas y mapas | Plotly / Recharts, D3, MapLibre |
+| Diagramas y redes | SVG (pozo a escala), Konva (edición), React Flow (redes y organigrama) |
+| API y cálculo | Python, FastAPI, NumPy, SciPy, pandas |
+| Carga y exportación | openpyxl, python-pptx, reportlab / cairosvg |
+| IA | OpenCV, modelos de visión |
+| Base de datos | PostgreSQL (Supabase, esquema `wellnexus`); TimescaleDB para tiempo real más adelante |
+| Archivos | Cloudflare R2 (10 GB gratis) |
+| Entrega | Web principal, PWA para campo, Docker para instalar en el servidor del cliente |
 
-## Enlaces (cuenta claude.ai)
-- Propuesta del proyecto (Claude Doc): https://claude.ai/artifact/VJhMtWyhvctwSjyyLFG24W
-- Lienzo de logotipos: https://claude.ai/artifact/AaWqzaozVFQKfrPfYopu19
+Arquitectura: monolito modular al inicio; se separa en servicios solo cuando el tamaño lo exija.
 
-## Pendiente / siguiente
-1. Logo definido (versiones 4 y 5).
-2. Aportar: manual de Centinela con fotos (RAP), fichas Excel/PPT de ejemplo, fotos de discos con diagnóstico, resultados de simulador para validar.
-3. Plan de prioridades y primera versión demostrable (MVP: fichas de pozo + carga masiva).
-4. Verificación de marca.
+Detalle en [`docs/`](docs/): [tecnología de la plataforma](docs/tecnologia-plataforma.md) · [tecnología de Draw](docs/tecnologia-draw.md) · [base de datos](docs/base-de-datos.md).
+
+## Estructura del repositorio
+
+```
+README.md
+docs/    Decisiones técnicas
+draw/    Diagrama de completación actual (v5), base de Wellnexus Draw
+logos/   Logotipo v4 y v5 (SVG y PNG) y láminas de módulos
+```
+
+## Marca
+
+Versión 4 "Acero y cielo" y versión 5 (variante Venezuela). Tipografía Sora.
+
+| Color | Hex |
+|---|---|
+| Pizarra | `#17212F` |
+| Azul acero | `#3E6A94` |
+| Celeste | `#7DD3FC` |
+| Gris niebla | `#E6ECF2` |
+| Amarillo (solo v5) | `#FFCC00` |
+| Rojo (solo v5) | `#E5394B` |
+
+## Hoja de ruta
+
+1. Esquema de base de datos de fichas (hecho, en Supabase).
+2. **Draw**: arreglar los errores de la v5 y sumar todas las completaciones, con PDF y PowerPoint.
+3. **Core**: fichas de pozo y carga masiva de Excel/PowerPoint (primera versión demostrable).
+4. Insight, Flow y Lift.
+5. Net, AI, Live, Alert, BI, Report y Team.
+
+## Límites legales
+
+- No se extrae código, librerías ni fórmulas internas de simuladores comerciales (WellFlo, PIPESIM, ISIS). Se construye con literatura pública y se valida comparando contra resultados que aporte el autor.
+- "Centinela" es marca de PDVSA: Wellnexus es independiente.
+- Los originales de Centinela (Excel, PowerPoint, fotos de discos) no se suben a este repositorio.
+- Pendiente: verificación de marca "Wellnexus" (INAPI Chile, SAPI Venezuela, dominios, abogado).
