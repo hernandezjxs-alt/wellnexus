@@ -13,6 +13,7 @@ type Ctx = {
   registrar: (nombre: string, correo: string, clave: string) => Promise<string | null>;
   recuperar: (correo: string) => Promise<string | null>;
   salir: () => Promise<void>;
+  activar: (nombre: string) => Promise<string | null>;
 };
 const AuthCtx = createContext<Ctx | null>(null);
 export const useAuth = () => {
@@ -48,16 +49,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const uid = session?.user.id;
-  useEffect(() => {
+  const cargarPerfil = useCallback(async () => {
     if (!uid) return;
-    let vivo = true;
-    supabase.from("perfil").select("id,nombre,rol").eq("id", uid).maybeSingle().then(({ data }) => {
-      if (!vivo) return;
-      setPerfil((data as Perfil) ?? null);
-      setCargando(false);
-    });
-    return () => { vivo = false; };
+    const { data } = await supabase.from("perfil").select("id,nombre,rol").eq("id", uid).maybeSingle();
+    setPerfil((data as Perfil) ?? null);
+    setCargando(false);
   }, [uid]);
+  useEffect(() => { cargarPerfil(); }, [cargarPerfil]);
+
+  const activar = useCallback(async (nombre: string) => {
+    const { error } = await supabase.rpc("activar_cuenta", { p_nombre: nombre, p_consentimiento: true });
+    if (error) return error.code === "PGRST106" || /schema/i.test(error.message) ? "Falta activar el esquema wellnexus en Supabase (Settings → API → Exposed schemas)." : error.message;
+    await cargarPerfil();
+    return null;
+  }, [cargarPerfil]);
 
   const entrar = useCallback(async (correo: string, clave: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email: correo, password: clave });
@@ -76,6 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
   const salir = useCallback(async () => { await supabase.auth.signOut(); }, []);
 
-  const valor = useMemo(() => ({ session, perfil, cargando, esAdmin: perfil?.rol === "admin", entrar, registrar, recuperar, salir }), [session, perfil, cargando, entrar, registrar, recuperar, salir]);
+  const valor = useMemo(() => ({ session, perfil, cargando, esAdmin: perfil?.rol === "admin", entrar, registrar, recuperar, salir, activar }), [session, perfil, cargando, entrar, registrar, recuperar, salir, activar]);
   return <AuthCtx.Provider value={valor}>{children}</AuthCtx.Provider>;
 }

@@ -29,7 +29,7 @@ export function LoginScreen() {
     const r = modo === "entrar" ? await entrar(correo, clave) : modo === "registro" ? await registrar(nombre.trim(), correo, clave) : await recuperar(correo);
     setOcupado(false);
     if (r) return setError(r);
-    if (modo === "registro") setAviso("Revisa tu correo y confirma la dirección para ingresar. Si no llega nada, ese correo ya se usa en otra app: crea la cuenta con uno distinto.");
+    if (modo === "registro") setAviso("Revisa tu correo y confirma la dirección para ingresar. Si ya tenías cuenta con ese correo, no llegará nada: toca Volver a ingresar, entra con tu contraseña de siempre y activa tu cuenta en Wellnexus.");
     if (modo === "recuperar") setAviso("Te enviamos un correo para crear una contraseña nueva.");
   }
 
